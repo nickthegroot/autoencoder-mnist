@@ -1,0 +1,7 @@
+{
+  "model": "cnn",
+  "n_components": 2,
+  "use_gpu": true,
+  "num_workers": 6,
+  "max_epochs": 100
+}

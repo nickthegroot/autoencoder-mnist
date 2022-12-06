@@ -5,6 +5,9 @@ import torch.nn.functional as F
 
 
 class AutoencoderFC(pl.LightningModule):
+    # Required for PyTorch Lightning model description
+    example_input_array = torch.zeros((1, 1, 28, 28))
+
     def __init__(self, n_components: int, lr: float):
         super().__init__()
         self.lr = lr
@@ -28,7 +31,7 @@ class AutoencoderFC(pl.LightningModule):
             nn.ReLU(),
             nn.Linear(128, 28 * 28),
             nn.Sigmoid(),
-            nn.Unflatten(1, (1, 28, 28)),
+            nn.Unflatten(1, (28, 28)),
         )
 
     def forward(self, x):

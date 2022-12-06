@@ -1,2 +1,3 @@
-*
-!.gitignore
+*/*
+!*/model.ckpt
+!*/config.json

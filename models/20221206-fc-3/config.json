@@ -1,0 +1,7 @@
+{
+  "model": "fc",
+  "n_components": 3,
+  "use_gpu": true,
+  "num_workers": 6,
+  "max_epochs": 100
+}
