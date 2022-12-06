@@ -5,21 +5,22 @@ import torch.nn.functional as F
 
 
 class AutoencoderFC(pl.LightningModule):
-    def __init__(self, lr: float):
+    def __init__(self, n_components: int, lr: float):
         super().__init__()
         self.lr = lr
 
         self.encoder = nn.Sequential(
+            nn.Flatten(),
             nn.Linear(28 * 28, 128),
             nn.ReLU(),
             nn.Linear(128, 64),
             nn.ReLU(),
             nn.Linear(64, 12),
             nn.ReLU(),
-            nn.Linear(12, 3),
+            nn.Linear(12, n_components),
         )
         self.decoder = nn.Sequential(
-            nn.Linear(3, 12),
+            nn.Linear(n_components, 12),
             nn.ReLU(),
             nn.Linear(12, 64),
             nn.ReLU(),
@@ -27,6 +28,7 @@ class AutoencoderFC(pl.LightningModule):
             nn.ReLU(),
             nn.Linear(128, 28 * 28),
             nn.Sigmoid(),
+            nn.Unflatten(1, (1, 28, 28)),
         )
 
     def forward(self, x):
@@ -36,7 +38,6 @@ class AutoencoderFC(pl.LightningModule):
 
     def _step(self, batch, batch_idx):
         x, _ = batch
-        x = x.view(x.size(0), -1) # squash down to b x (28 x 28) = b x 728
         x_hat = self(x)
         loss = F.mse_loss(x_hat, x)
         return loss

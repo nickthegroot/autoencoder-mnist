@@ -3,9 +3,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 class AutoencoderCNN(pl.LightningModule):
-    def __init__(self, lr: float):
+    def __init__(self, n_components: int, lr: float):
         super().__init__()
         self.lr = lr
 
@@ -16,8 +15,12 @@ class AutoencoderCNN(pl.LightningModule):
             nn.Conv2d(16, 8, 3, stride=2, padding=1),  # b, 8, 3, 3
             nn.ReLU(True),
             nn.MaxPool2d(2, stride=1),  # b, 8, 2, 2
+            nn.Flatten(), # b, 32
+            nn.Linear(32, n_components),  # b, n_components
         )
         self.decoder = nn.Sequential(
+            nn.Linear(n_components, 32),  # b, 32
+            nn.Unflatten(1, (8, 2, 2)), # b, 8, 2, 2
             nn.ConvTranspose2d(8, 16, 3, stride=2),  # b, 16, 5, 5
             nn.ReLU(True),
             nn.ConvTranspose2d(16, 8, 5, stride=3, padding=1),  # b, 8, 15, 15
@@ -36,6 +39,13 @@ class AutoencoderCNN(pl.LightningModule):
         x_hat = self(x)
         loss = F.mse_loss(x_hat, x)
         self.log("tr_loss", loss)
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        x, _ = batch
+        x_hat = self(x)
+        loss = F.mse_loss(x_hat, x)
+        self.log("val_loss", loss)
         return loss
 
     def configure_optimizers(self):
